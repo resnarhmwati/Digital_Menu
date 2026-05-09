@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "791657874797",
+    "project_id": "cafe-menu-digital",
+    "storage_bucket": "cafe-menu-digital.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:791657874797:android:4a829cf3c702e538fb8664",
+        "android_client_info": {
+          "package_name": "com.cafemenu.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYT7SUCDTJA-Na4uY_bNNWbXS-LJdXd90"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:791657874797:android:69b3487b38dd6643fb8664",
+        "android_client_info": {
+          "package_name": "com.example.cafe_menu_digital"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYT7SUCDTJA-Na4uY_bNNWbXS-LJdXd90"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
