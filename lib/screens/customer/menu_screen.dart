@@ -21,9 +21,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
   CafeModel? _cafe;
   List<CategoryModel> _categories = [];
   List<MenuModel> _menus = [];
-  String? _selectedCategoryId;
+  String? _selectedCategoryId; // null = All Menu
   bool _isLoading = true;
-  final Map<String, GlobalKey> _categoryKeys = {};
 
   @override
   void initState() {
@@ -36,12 +35,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     setState(() => _cafe = cafe);
 
     _firestoreService.getCategories(AppConstants.cafeId).listen((cats) {
-      setState(() {
-        _categories = cats;
-        for (final cat in cats) {
-          _categoryKeys.putIfAbsent(cat.id, () => GlobalKey());
-        }
-      });
+      setState(() => _categories = cats);
     });
 
     _firestoreService.getMenus(AppConstants.cafeId).listen((menus) {
@@ -52,26 +46,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     });
   }
 
-  void _scrollToCategory(String? categoryId) {
-    setState(() => _selectedCategoryId = categoryId);
-
-    if (categoryId == null) {
-      _scrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      return;
-    }
-
-    final key = _categoryKeys[categoryId];
-    if (key?.currentContext != null) {
-      Scrollable.ensureVisible(
-        key!.currentContext!,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+  List<MenuModel> get _filteredMenus {
+    if (_selectedCategoryId == null) return _menus.where((m) => m.isAvailable).toList();
+    return _menus.where((m) => m.categoryId == _selectedCategoryId && m.isAvailable).toList();
   }
 
   void _openCart() async {
@@ -137,8 +114,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                       const SizedBox(height: 12),
                       Text(
                         menu.description,
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 14),
+                        style: const TextStyle(
+                            color: Colors.grey, fontSize: 14),
                       ),
                     ],
                     const SizedBox(height: 20),
@@ -161,8 +138,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                             ),
                           ),
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               '$qty',
                               style: const TextStyle(
@@ -179,15 +155,12 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,
                               foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
                             ),
                             child: Text(
-                              qty == 0
-                                  ? 'Tambah ke Keranjang'
-                                  : 'Tambah Lagi',
+                              qty == 0 ? 'Tambah ke Keranjang' : 'Tambah Lagi',
                               style: const TextStyle(fontSize: 15),
                             ),
                           ),
@@ -246,23 +219,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                   children: [
                     _buildCategoryTabs(),
                     Expanded(
-                      child: ListView(
-                        controller: _scrollController,
-                        padding: EdgeInsets.only(
-                          top: 16,
-                          left: 16,
-                          right: 16,
-                          bottom: _cart.totalItems > 0 ? 90 : 16,
-                        ),
-                        children: _categories.map((cat) {
-                          final menus = _menus
-                              .where((m) =>
-                                  m.categoryId == cat.id && m.isAvailable)
-                              .toList();
-                          if (menus.isEmpty) return const SizedBox.shrink();
-                          return _buildCategorySection(cat, menus);
-                        }).toList(),
-                      ),
+                      child: _selectedCategoryId == null
+                          ? _buildAllMenu()
+                          : _buildFilteredMenu(),
                     ),
                   ],
                 ),
@@ -321,13 +280,13 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                               ),
                             ),
                             Text(
-  AppConstants.formatRupiah(_cart.totalPrice), // Ganti ke sini
-  style: const TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.bold,
-    fontSize: 15,
-  ),
-)
+                              AppConstants.formatRupiah(_cart.totalPrice),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -335,6 +294,91 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                   ),
               ],
             ),
+    );
+  }
+
+  // Semua menu dikelompokkan per kategori
+  Widget _buildAllMenu() {
+    return ListView(
+      controller: _scrollController,
+      padding: EdgeInsets.only(
+        top: 16,
+        left: 16,
+        right: 16,
+        bottom: _cart.totalItems > 0 ? 90 : 16,
+      ),
+      children: _categories.map((cat) {
+        final menus = _menus
+            .where((m) => m.categoryId == cat.id && m.isAvailable)
+            .toList();
+        if (menus.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12, top: 8),
+              child: Text(
+                cat.name,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: menus.length,
+              itemBuilder: (context, index) =>
+                  _buildMenuCard(menus[index]),
+            ),
+            const SizedBox(height: 16),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  // Menu per kategori yang dipilih
+  Widget _buildFilteredMenu() {
+    final menus = _filteredMenus;
+
+    if (menus.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.fastfood, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Tidak ada menu di kategori ini',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: EdgeInsets.only(
+        top: 16,
+        left: 16,
+        right: 16,
+        bottom: _cart.totalItems > 0 ? 90 : 16,
+      ),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: menus.length,
+      itemBuilder: (context, index) => _buildMenuCard(menus[index]),
     );
   }
 
@@ -347,7 +391,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
           GestureDetector(
-            onTap: () => _scrollToCategory(null),
+            onTap: () => setState(() => _selectedCategoryId = null),
             child: Container(
               margin: const EdgeInsets.only(right: 8),
               padding:
@@ -374,7 +418,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
           ..._categories.map((cat) {
             final isSelected = cat.id == _selectedCategoryId;
             return GestureDetector(
-              onTap: () => _scrollToCategory(cat.id),
+              onTap: () => setState(() => _selectedCategoryId = cat.id),
               child: Container(
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(
@@ -396,36 +440,6 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
           }),
         ],
       ),
-    );
-  }
-
-  Widget _buildCategorySection(CategoryModel cat, List<MenuModel> menus) {
-    return Column(
-      key: _categoryKeys[cat.id],
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12, top: 8),
-          child: Text(
-            cat.name,
-            style:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.75,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-          ),
-          itemCount: menus.length,
-          itemBuilder: (context, index) => _buildMenuCard(menus[index]),
-        ),
-        const SizedBox(height: 16),
-      ],
     );
   }
 
