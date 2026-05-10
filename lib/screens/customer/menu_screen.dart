@@ -24,6 +24,13 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
   String? _selectedCategoryId; // null = All Menu
   bool _isLoading = true;
 
+  // Warna tema sesuai desain
+  static const Color _creamBg = Color(0xFFF2EBE0);
+  static const Color _primaryBrown = Color(0xFF8B6F47);
+  static const Color _darkBrown = Color(0xFF5D4037);
+  static const Color _cardBeige = Color(0xFFE8DCC8);
+  static const Color _lightBeige = Color(0xFFD4C4A8);
+
   @override
   void initState() {
     super.initState();
@@ -69,8 +76,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: _creamBg,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
@@ -84,41 +92,41 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
               if (menu.imageUrl.isNotEmpty)
                 ClipRRect(
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(20)),
+                      const BorderRadius.vertical(top: Radius.circular(28)),
                   child: Image.network(
                     menu.imageUrl,
                     width: double.infinity,
-                    height: 220,
+                    height: 240,
                     fit: BoxFit.cover,
                   ),
                 ),
               Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       menu.name,
                       style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 22, fontWeight: FontWeight.bold, color: _darkBrown),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       AppConstants.formatRupiah(menu.price),
                       style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.orange,
+                          fontSize: 18,
+                          color: _primaryBrown,
                           fontWeight: FontWeight.bold),
                     ),
                     if (menu.description.isNotEmpty) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       Text(
                         menu.description,
                         style: const TextStyle(
                             color: Colors.grey, fontSize: 14),
                       ),
                     ],
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Row(
                       children: [
                         if (qty > 0) ...[
@@ -128,21 +136,21 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                               setState(() => _cart.decreaseItem(menu.id));
                             },
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.orange,
-                                borderRadius: BorderRadius.circular(8),
+                                color: _primaryBrown,
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(Icons.remove,
                                   color: Colors.white),
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Text(
                               '$qty',
                               style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                                  fontSize: 20, fontWeight: FontWeight.bold, color: _darkBrown),
                             ),
                           ),
                         ],
@@ -153,11 +161,12 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                               setState(() => _cart.addItem(menu));
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
+                              backgroundColor: _primaryBrown,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
+                                  borderRadius: BorderRadius.circular(16)),
                             ),
                             child: Text(
                               qty == 0 ? 'Tambah ke Keranjang' : 'Tambah Lagi',
@@ -167,7 +176,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
@@ -181,9 +190,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: _creamBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: _creamBg,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,7 +202,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
-                color: Colors.black,
+                color: _darkBrown,
               ),
             ),
             if (_cafe?.address != null)
@@ -206,18 +215,39 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
         actions: [
           if (_cafe?.wifiName != null && _cafe!.wifiName.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.wifi, color: Colors.orange),
+              icon: const Icon(Icons.wifi, color: _primaryBrown),
               onPressed: _showWifiDialog,
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: _primaryBrown,
+              ),
+            )
           : Stack(
               children: [
                 Column(
                   children: [
+                    // Header teks (satu baris, tanpa ikon profil)
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(24, 8, 24, 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Coffee so strong it keeps you on',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                            color: _darkBrown,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Category Tabs
                     _buildCategoryTabs(),
+                    // Content
                     Expanded(
                       child: _selectedCategoryId == null
                           ? _buildAllMenu()
@@ -225,11 +255,12 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                     ),
                   ],
                 ),
+                // Floating Cart
                 if (_cart.totalItems > 0)
                   Positioned(
-                    bottom: 16,
-                    left: 16,
-                    right: 16,
+                    bottom: 24,
+                    left: 24,
+                    right: 24,
                     child: GestureDetector(
                       onTap: _openCart,
                       child: Container(
@@ -238,11 +269,11 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                           vertical: 14,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.orange,
+                          color: _primaryBrown,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.orange.withOpacity(0.4),
+                              color: _primaryBrown.withOpacity(0.4),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -297,14 +328,90 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     );
   }
 
+  Widget _buildCategoryTabs() {
+    // Daftar tab default jika belum ada kategori
+    final List<Map<String, dynamic>> defaultTabs = [
+      {'id': null, 'name': 'All'},
+      {'id': 'recommended', 'name': 'Recommended'},
+      {'id': 'best', 'name': 'Best Ratings'},
+    ];
+
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _categories.isEmpty ? defaultTabs.length : _categories.length + 1,
+        itemBuilder: (context, index) {
+          String? catId;
+          String catName;
+          bool isSelected;
+
+          if (_categories.isEmpty) {
+            catId = defaultTabs[index]['id'] as String?;
+            catName = defaultTabs[index]['name'] as String;
+            isSelected = _selectedCategoryId == catId;
+          } else {
+            if (index == 0) {
+              catId = null;
+              catName = 'All';
+              isSelected = _selectedCategoryId == null;
+            } else {
+              final cat = _categories[index - 1];
+              catId = cat.id;
+              catName = cat.name;
+              isSelected = _selectedCategoryId == cat.id;
+            }
+          }
+
+          return GestureDetector(
+            onTap: () => setState(() => _selectedCategoryId = catId),
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? _primaryBrown : _cardBeige,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: _primaryBrown.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                catName,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : _darkBrown,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   // Semua menu dikelompokkan per kategori
   Widget _buildAllMenu() {
     return ListView(
       controller: _scrollController,
       padding: EdgeInsets.only(
         top: 16,
-        left: 16,
-        right: 16,
+        left: 24,
+        right: 24,
         bottom: _cart.totalItems > 0 ? 90 : 16,
       ),
       children: _categories.map((cat) {
@@ -320,7 +427,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
               child: Text(
                 cat.name,
                 style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
+                    fontSize: 18, fontWeight: FontWeight.bold, color: _darkBrown),
               ),
             ),
             GridView.builder(
@@ -329,9 +436,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
               gridDelegate:
                   const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.75,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
+                childAspectRatio: 0.72,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
               ),
               itemCount: menus.length,
               itemBuilder: (context, index) =>
@@ -367,79 +474,18 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     return GridView.builder(
       padding: EdgeInsets.only(
         top: 16,
-        left: 16,
-        right: 16,
+        left: 24,
+        right: 24,
         bottom: _cart.totalItems > 0 ? 90 : 16,
       ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        childAspectRatio: 0.72,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
       ),
       itemCount: menus.length,
       itemBuilder: (context, index) => _buildMenuCard(menus[index]),
-    );
-  }
-
-  Widget _buildCategoryTabs() {
-    return Container(
-      color: Colors.white,
-      height: 50,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        children: [
-          GestureDetector(
-            onTap: () => setState(() => _selectedCategoryId = null),
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: _selectedCategoryId == null
-                    ? Colors.orange
-                    : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'All Menu',
-                style: TextStyle(
-                  color: _selectedCategoryId == null
-                      ? Colors.white
-                      : Colors.black,
-                  fontWeight: _selectedCategoryId == null
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-                ),
-              ),
-            ),
-          ),
-          ..._categories.map((cat) {
-            final isSelected = cat.id == _selectedCategoryId;
-            return GestureDetector(
-              onTap: () => setState(() => _selectedCategoryId = cat.id),
-              child: Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.orange : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  cat.name,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
     );
   }
 
@@ -450,63 +496,105 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
 
     return GestureDetector(
       onTap: () => _showMenuDetail(menu),
-      child: Card(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _cardBeige,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                child: menu.imageUrl.isNotEmpty
-                    ? Image.network(
-                        menu.imageUrl,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      )
-                    : Container(
-                        color: Colors.orange.shade100,
-                        child: const Center(
-                          child: Icon(Icons.fastfood,
-                              size: 40, color: Colors.orange),
+              child: Container(
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _lightBeige,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: menu.imageUrl.isNotEmpty
+                      ? Image.network(
+                          menu.imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : const Center(
+                          child: Icon(Icons.local_cafe,
+                              size: 40, color: _primaryBrown),
                         ),
-                      ),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     menu.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _darkBrown,
+                      fontSize: 13,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    AppConstants.formatRupiah(menu.price),
-                    style: const TextStyle(color: Colors.orange),
-                  ),
                   const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        AppConstants.formatRupiah(menu.price),
+                        style: const TextStyle(
+                          color: _primaryBrown,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      if (itemInCart > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _primaryBrown,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$itemInCart',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   itemInCart == 0
                       ? SizedBox(
                           width: double.infinity,
+                          height: 32,
                           child: ElevatedButton(
                             onPressed: () =>
                                 setState(() => _cart.addItem(menu)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
+                              backgroundColor: _primaryBrown,
                               foregroundColor: Colors.white,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 4),
+                              elevation: 0,
+                              padding: EdgeInsets.zero,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
+                                  borderRadius: BorderRadius.circular(10)),
                             ),
-                            child: const Text('+',
-                                style: TextStyle(fontSize: 18)),
+                            child: const Icon(Icons.add, size: 18),
                           ),
                         )
                       : Row(
@@ -516,33 +604,34 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                               onTap: () => setState(
                                   () => _cart.decreaseItem(menu.id)),
                               child: Container(
-                                padding: const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange,
-                                  borderRadius: BorderRadius.circular(6),
+                                  color: _primaryBrown,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(Icons.remove,
-                                    color: Colors.white, size: 16),
+                                    color: Colors.white, size: 14),
                               ),
                             ),
                             Text(
                               '$itemInCart',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 14,
+                                color: _darkBrown,
                               ),
                             ),
                             InkWell(
                               onTap: () =>
                                   setState(() => _cart.addItem(menu)),
                               child: Container(
-                                padding: const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange,
-                                  borderRadius: BorderRadius.circular(6),
+                                  color: _primaryBrown,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(Icons.add,
-                                    color: Colors.white, size: 16),
+                                    color: Colors.white, size: 14),
                               ),
                             ),
                           ],
@@ -560,11 +649,13 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
+        backgroundColor: _creamBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
-            Icon(Icons.wifi, color: Colors.orange),
+            Icon(Icons.wifi, color: _primaryBrown),
             SizedBox(width: 8),
-            Text('Info WiFi'),
+            Text('Info WiFi', style: TextStyle(color: _darkBrown)),
           ],
         ),
         content: Column(
@@ -572,18 +663,18 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Nama WiFi:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextStyle(fontWeight: FontWeight.bold, color: _darkBrown)),
             Text(_cafe?.wifiName ?? '-'),
             const SizedBox(height: 12),
             const Text('Password:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextStyle(fontWeight: FontWeight.bold, color: _darkBrown)),
             Text(_cafe?.wifiPassword ?? '-'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup'),
+            child: const Text('Tutup', style: TextStyle(color: _primaryBrown)),
           ),
         ],
       ),

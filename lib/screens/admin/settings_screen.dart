@@ -19,6 +19,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = false;
   bool _isSaving = false;
 
+  // ─── WARNA TEMA ───
+  static const Color _brown = Color(0xFF8D6E63);
+  static const Color _darkBrown = Color(0xFF5D4037);
+  static const Color _cream = Color(0xFFF5F0EB);
+  static const Color _surface = Color(0xFFFFF8F0);
+  static const Color _lightBrown = Color(0xFFD7CCC8);
+  static const Color _accentBrown = Color(0xFFA1887F);
+
   @override
   void initState() {
     super.initState();
@@ -52,8 +60,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Pengaturan berhasil disimpan!'),
-          backgroundColor: Colors.green,
+          content: Text(
+            'Pengaturan berhasil disimpan!',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: _darkBrown,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
         ),
       );
     }
@@ -62,106 +77,142 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(color: _brown),
+      );
     }
 
     return Scaffold(
+      backgroundColor: _cream,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Info Cafe',
-                style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-
-            TextField(
+            _buildSectionTitle('Info Cafe'),
+            const SizedBox(height: 16),
+            _buildTextField(
               controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Nama Cafe',
-                prefixIcon: const Icon(Icons.store),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
+              label: 'Nama Cafe',
+              icon: Icons.store_outlined,
             ),
-            const SizedBox(height: 12),
-
-            TextField(
+            const SizedBox(height: 14),
+            _buildTextField(
               controller: _addressController,
+              label: 'Alamat',
+              icon: Icons.location_on_outlined,
               maxLines: 2,
-              decoration: InputDecoration(
-                labelText: 'Alamat',
-                prefixIcon: const Icon(Icons.location_on),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            const Text('Kontak',
-                style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-
-            TextField(
+            _buildSectionTitle('Kontak'),
+            const SizedBox(height: 16),
+            _buildTextField(
               controller: _waController,
+              label: 'Nomor WhatsApp',
+              icon: Icons.phone_outlined,
+              hint: '6281234567890',
               keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Nomor WhatsApp',
-                hintText: '6281234567890',
-                prefixIcon: const Icon(Icons.phone),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
-            const Text('WiFi',
-                style: TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-
-            TextField(
+            _buildSectionTitle('WiFi'),
+            const SizedBox(height: 16),
+            _buildTextField(
               controller: _wifiNameController,
-              decoration: InputDecoration(
-                labelText: 'Nama WiFi',
-                prefixIcon: const Icon(Icons.wifi),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
+              label: 'Nama WiFi',
+              icon: Icons.wifi_outlined,
             ),
-            const SizedBox(height: 12),
-
-            TextField(
+            const SizedBox(height: 14),
+            _buildTextField(
               controller: _wifiPassController,
-              decoration: InputDecoration(
-                labelText: 'Password WiFi',
-                prefixIcon: const Icon(Icons.lock),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
+              label: 'Password WiFi',
+              icon: Icons.lock_outline,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 36),
 
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 54,
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveSettings,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: _brown,
                   foregroundColor: Colors.white,
+                  elevation: 2,
+                  shadowColor: _brown.withOpacity(0.3),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 child: _isSaving
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Simpan Pengaturan',
-                        style: TextStyle(fontSize: 16)),
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : const Text('Simpan Pengaturan'),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: _darkBrown,
+        letterSpacing: 0.3,
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? hint,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: const TextStyle(color: _darkBrown),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: _accentBrown),
+        hintText: hint,
+        hintStyle: TextStyle(color: _darkBrown.withOpacity(0.35)),
+        prefixIcon: Icon(icon, color: _accentBrown),
+        filled: true,
+        fillColor: _surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: _lightBrown),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: _lightBrown),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: _brown, width: 2),
         ),
       ),
     );

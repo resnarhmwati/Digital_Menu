@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../services/firestore_service.dart';
 import '../../services/cloudinary_service.dart';
@@ -19,6 +20,14 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   final _firestoreService = FirestoreService();
   final _cloudinaryService = CloudinaryService();
   List<CategoryModel> _categories = [];
+
+  // ─── WARNA TEMA WARM BROWN (sesuai gambar desain) ───
+  static const Color _primaryBrown = Color(0xFF8D6E63);
+  static const Color _darkBrown = Color(0xFF5D4037);
+  static const Color _lightBrown = Color(0xFFD7CCC8);
+  static const Color _cream = Color(0xFFF5F0EB);
+  static const Color _surfaceCream = Color(0xFFFFF8F0);
+  static const Color _accentBrown = Color(0xFFA1887F);
 
   @override
   void initState() {
@@ -42,17 +51,35 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
         final menus = menuSnapshot.data ?? [];
 
         return Scaffold(
+          backgroundColor: _cream,
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddMenuDialog(context),
-            backgroundColor: Colors.orange,
+            onPressed: () => _showMenuDialog(context),
+            backgroundColor: _primaryBrown,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text('Tambah Menu',
-                style: TextStyle(color: Colors.white)),
+            label: const Text(
+              'Tambah Menu',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
           body: menus.isEmpty
               ? const Center(
-                  child: Text('Belum ada menu',
-                      style: TextStyle(color: Colors.grey)))
+                  child: Text(
+                    'Belum ada menu',
+                    style: TextStyle(
+                      color: _accentBrown,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: menus.length,
@@ -61,11 +88,12 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     final category = _categories.firstWhere(
                       (c) => c.id == menu.categoryId,
                       orElse: () => CategoryModel(
-                          id: '',
-                          cafeId: '',
-                          name: '-',
-                          order: 0,
-                          isActive: true),
+                        id: '',
+                        cafeId: '',
+                        name: '-',
+                        order: 0,
+                        isActive: true,
+                      ),
                     );
                     return _buildMenuCard(menu, category);
                   },
@@ -77,44 +105,117 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
 
   Widget _buildMenuCard(MenuModel menu, CategoryModel category) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 16),
+      color: _surfaceCream,
+      elevation: 4,
+      shadowColor: _primaryBrown.withOpacity(0.12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
+        contentPadding: const EdgeInsets.all(16),
         leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           child: menu.imageUrl.isNotEmpty
-              ? Image.network(menu.imageUrl,
-                  width: 60, height: 60, fit: BoxFit.cover)
+              ? Image.network(
+                  menu.imageUrl,
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.cover,
+                )
               : Container(
-                  width: 60,
-                  height: 60,
-                  color: Colors.orange.shade100,
-                  child: const Icon(Icons.fastfood, color: Colors.orange)),
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFEBE9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.fastfood,
+                    color: _accentBrown,
+                    size: 28,
+                  ),
+                ),
         ),
-        title: Text(menu.name,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Rp ${menu.price}'),
-            Text(category.name,
-                style: const TextStyle(color: Colors.orange, fontSize: 12)),
-          ],
+        title: Text(
+          menu.name,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: _darkBrown,
+            letterSpacing: 0.2,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppConstants.formatRupiah(menu.price),
+                style: const TextStyle(
+                  color: _primaryBrown,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _lightBrown.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  category.name,
+                  style: const TextStyle(
+                    color: _darkBrown,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Switch(
               value: menu.isAvailable,
-              activeColor: Colors.orange,
+              activeColor: _primaryBrown,
+              activeTrackColor: _lightBrown,
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: Colors.grey.shade300,
               onChanged: (val) {
                 _firestoreService.updateMenu(menu.id, {'is_available': val});
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _confirmDelete(context, menu),
+            // Tombol Edit
+            Container(
+              margin: const EdgeInsets.only(left: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFEBE9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.edit, color: _primaryBrown, size: 20),
+                onPressed: () => _showMenuDialog(context, menu: menu),
+                splashRadius: 20,
+              ),
+            ),
+            // Tombol Hapus
+            Container(
+              margin: const EdgeInsets.only(left: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEBEE),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.delete, color: Color(0xFFC62828), size: 20),
+                onPressed: () => _confirmDelete(context, menu),
+                splashRadius: 20,
+              ),
             ),
           ],
         ),
@@ -126,39 +227,67 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Hapus Menu'),
-        content: Text('Yakin ingin hapus "${menu.name}"?'),
+        backgroundColor: _surfaceCream,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: const Text(
+          'Hapus Menu',
+          style: TextStyle(
+            color: _darkBrown,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'Yakin ingin hapus "${menu.name}"?',
+          style: const TextStyle(color: _accentBrown),
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: _accentBrown, fontWeight: FontWeight.w600),
+            ),
+          ),
           TextButton(
             onPressed: () {
               _firestoreService.deleteMenu(menu.id);
               Navigator.pop(context);
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(
+                color: Color(0xFFC62828),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showAddMenuDialog(BuildContext context) {
-    final nameController = TextEditingController();
-    final descController = TextEditingController();
-    final priceController = TextEditingController();
-    String? selectedCategoryId;
+  // Satu dialog untuk tambah & edit
+  void _showMenuDialog(BuildContext context, {MenuModel? menu}) {
+    final isEdit = menu != null;
+    final nameController = TextEditingController(text: menu?.name ?? '');
+    final descController = TextEditingController(text: menu?.description ?? '');
+    final priceController = TextEditingController(
+        text: menu?.price != null ? menu!.price.toString() : '');
+    String? selectedCategoryId = menu?.categoryId;
     File? selectedImage;
     Uint8List? selectedImageBytes;
     XFile? selectedXFile;
+    String existingImageUrl = menu?.imageUrl ?? '';
     bool isLoading = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: _surfaceCream,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) => Padding(
@@ -173,17 +302,37 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tambah Menu Baru',
-                    style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
+                // Indicator handle seperti di gambar tengah
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: _lightBrown,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                Text(
+                  isEdit ? 'Edit Menu' : 'Tambah Menu Baru',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: _darkBrown,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 20),
 
                 // Foto
                 GestureDetector(
                   onTap: () async {
                     final picker = ImagePicker();
                     final picked = await picker.pickImage(
-                        source: ImageSource.gallery, imageQuality: 70);
+                      source: ImageSource.gallery,
+                      imageQuality: 70,
+                    );
                     if (picked != null) {
                       final bytes = await picked.readAsBytes();
                       setModalState(() {
@@ -196,83 +345,166 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     }
                   },
                   child: Container(
-                    height: 120,
+                    height: 140,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.shade200),
+                      color: const Color(0xFFEFEBE9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: _lightBrown, width: 1.5),
                     ),
                     child: selectedImageBytes != null
                         ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.memory(selectedImageBytes!,
-                                fit: BoxFit.cover))
-                        : const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_photo_alternate,
-                                  size: 40, color: Colors.orange),
-                              Text('Tap untuk pilih foto'),
-                            ],
-                          ),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.memory(
+                              selectedImageBytes!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : existingImageUrl.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.network(
+                                  existingImageUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_photo_alternate_outlined,
+                                    size: 44,
+                                    color: _accentBrown,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Tap untuk pilih foto',
+                                    style: TextStyle(
+                                      color: _accentBrown,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
                 TextField(
                   controller: nameController,
+                  style: const TextStyle(color: _darkBrown),
                   decoration: InputDecoration(
                     labelText: 'Nama Menu',
+                    labelStyle: const TextStyle(color: _accentBrown),
+                    filled: true,
+                    fillColor: _cream,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _primaryBrown, width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
                 TextField(
                   controller: descController,
+                  style: const TextStyle(color: _darkBrown),
                   decoration: InputDecoration(
                     labelText: 'Deskripsi',
+                    labelStyle: const TextStyle(color: _accentBrown),
+                    filled: true,
+                    fillColor: _cream,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _primaryBrown, width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
                 TextField(
                   controller: priceController,
                   keyboardType: TextInputType.number,
+                  style: const TextStyle(color: _darkBrown),
                   decoration: InputDecoration(
                     labelText: 'Harga',
+                    labelStyle: const TextStyle(color: _accentBrown),
                     prefixText: 'Rp ',
+                    prefixStyle: const TextStyle(
+                      color: _primaryBrown,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    filled: true,
+                    fillColor: _cream,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _primaryBrown, width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
                 DropdownButtonFormField<String>(
                   value: selectedCategoryId,
+                  style: const TextStyle(color: _darkBrown),
                   decoration: InputDecoration(
                     labelText: 'Kategori',
+                    labelStyle: const TextStyle(color: _accentBrown),
+                    filled: true,
+                    fillColor: _cream,
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _primaryBrown, width: 2),
+                    ),
                   ),
                   items: _categories
-                      .map((c) => DropdownMenuItem(
-                            value: c.id,
-                            child: Text(c.name),
-                          ))
+                      .map(
+                        (c) => DropdownMenuItem(
+                          value: c.id,
+                          child: Text(c.name),
+                        ),
+                      )
                       .toList(),
                   onChanged: (val) =>
                       setModalState(() => selectedCategoryId = val),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
 
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 54,
                   child: ElevatedButton(
                     onPressed: isLoading
                         ? null
@@ -282,50 +514,87 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                                 selectedCategoryId == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('Lengkapi semua field!')),
+                                  content: Text('Lengkapi semua field!'),
+                                  backgroundColor: _darkBrown,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(12),
+                                    ),
+                                  ),
+                                ),
                               );
                               return;
                             }
 
                             setModalState(() => isLoading = true);
 
-                            String imageUrl = '';
+                            // Upload foto baru kalau ada
+                            String imageUrl = existingImageUrl;
                             if (selectedXFile != null) {
                               if (kIsWeb) {
-                                imageUrl = await _cloudinaryService
-                                        .uploadImageWeb(selectedImageBytes!) ??
-                                    '';
+                                imageUrl = await _cloudinaryService.uploadImageWeb(
+                                        selectedImageBytes!) ??
+                                    existingImageUrl;
                               } else {
-                                imageUrl = await _cloudinaryService
-                                        .uploadImage(selectedImage!) ??
-                                    '';
+                                imageUrl = await _cloudinaryService.uploadImage(
+                                        selectedImage!) ??
+                                    existingImageUrl;
                               }
                             }
 
-                            final menu = MenuModel(
-                              id: '',
-                              cafeId: AppConstants.cafeId,
-                              categoryId: selectedCategoryId!,
-                              name: nameController.text,
-                              description: descController.text,
-                              price: int.parse(priceController.text),
-                              imageUrl: imageUrl,
-                              isAvailable: true,
-                            );
+                            if (isEdit) {
+                              // Update menu
+                              await _firestoreService.updateMenu(menu!.id, {
+                                'name': nameController.text,
+                                'description': descController.text,
+                                'price': int.parse(priceController.text),
+                                'category_id': selectedCategoryId,
+                                'image_url': imageUrl,
+                              });
+                            } else {
+                              // Tambah menu baru
+                              final newMenu = MenuModel(
+                                id: '',
+                                cafeId: AppConstants.cafeId,
+                                categoryId: selectedCategoryId!,
+                                name: nameController.text,
+                                description: descController.text,
+                                price: int.parse(priceController.text),
+                                imageUrl: imageUrl,
+                                isAvailable: true,
+                              );
+                              await _firestoreService.addMenu(newMenu);
+                            }
 
-                            await _firestoreService.addMenu(menu);
                             if (context.mounted) Navigator.pop(context);
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: _primaryBrown,
                       foregroundColor: Colors.white,
+                      elevation: 2,
+                      shadowColor: _primaryBrown.withOpacity(0.3),
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Simpan Menu',
-                            style: TextStyle(fontSize: 16)),
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2.5,
+                            ),
+                          )
+                        : Text(
+                            isEdit ? 'Simpan Perubahan' : 'Simpan Menu',
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),

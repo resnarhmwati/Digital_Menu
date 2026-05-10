@@ -97,3 +97,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_native_splash:
+  background_image: assets/arseven_logo.png
+  image: assets/splash.png
+  android: true
+  ios: true
+  fullscreen: true
+  android_gravity: center
+  ios_content_mode: center
