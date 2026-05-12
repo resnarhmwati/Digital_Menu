@@ -18,13 +18,14 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
   final _firestoreService = FirestoreService();
   final Cart _cart = Cart();
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
   CafeModel? _cafe;
   List<CategoryModel> _categories = [];
   List<MenuModel> _menus = [];
-  String? _selectedCategoryId; // null = All Menu
+  String? _selectedCategoryId;
+  String _searchQuery = '';
   bool _isLoading = true;
 
-  // Warna tema sesuai desain
   static const Color _creamBg = Color(0xFFF2EBE0);
   static const Color _primaryBrown = Color(0xFF8B6F47);
   static const Color _darkBrown = Color(0xFF5D4037);
@@ -54,8 +55,19 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
   }
 
   List<MenuModel> get _filteredMenus {
-    if (_selectedCategoryId == null) return _menus.where((m) => m.isAvailable).toList();
-    return _menus.where((m) => m.categoryId == _selectedCategoryId && m.isAvailable).toList();
+    List<MenuModel> result;
+    if (_selectedCategoryId == null) {
+      result = _menus.where((m) => m.isAvailable).toList();
+    } else {
+      result = _menus
+          .where((m) => m.categoryId == _selectedCategoryId && m.isAvailable)
+          .toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      result = result.where((m) => m.name.toLowerCase().contains(q)).toList();
+    }
+    return result;
   }
 
   void _openCart() async {
@@ -96,7 +108,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                   child: Image.network(
                     menu.imageUrl,
                     width: double.infinity,
-                    height: 240,
+                    height: 380, // ← lebih tinggi
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -108,7 +120,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                     Text(
                       menu.name,
                       style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold, color: _darkBrown),
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: _darkBrown),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -146,11 +160,14 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 20),
                             child: Text(
                               '$qty',
                               style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold, color: _darkBrown),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: _darkBrown),
                             ),
                           ),
                         ],
@@ -163,13 +180,16 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _primaryBrown,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16)),
                             ),
                             child: Text(
-                              qty == 0 ? 'Tambah ke Keranjang' : 'Tambah Lagi',
+                              qty == 0
+                                  ? 'Tambah ke Keranjang'
+                                  : 'Tambah Lagi',
                               style: const TextStyle(fontSize: 15),
                             ),
                           ),
@@ -194,6 +214,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
       appBar: AppBar(
         backgroundColor: _creamBg,
         elevation: 0,
+         scrolledUnderElevation: 0,
+        automaticallyImplyLeading: false,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -222,15 +244,12 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
-                color: _primaryBrown,
-              ),
+              child: CircularProgressIndicator(color: _primaryBrown),
             )
           : Stack(
               children: [
                 Column(
                   children: [
-                    // Header teks (satu baris, tanpa ikon profil)
                     const Padding(
                       padding: EdgeInsets.fromLTRB(24, 8, 24, 8),
                       child: Align(
@@ -245,9 +264,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                         ),
                       ),
                     ),
-                    // Category Tabs
+                    _buildSearchBar(),
                     _buildCategoryTabs(),
-                    // Content
                     Expanded(
                       child: _selectedCategoryId == null
                           ? _buildAllMenu()
@@ -255,7 +273,6 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                     ),
                   ],
                 ),
-                // Floating Cart
                 if (_cart.totalItems > 0)
                   Positioned(
                     bottom: 24,
@@ -328,8 +345,51 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     );
   }
 
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+      child: Container(
+        height: 44,
+        decoration: BoxDecoration(
+          color: _cardBeige,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: (value) => setState(() => _searchQuery = value),
+          style: const TextStyle(fontSize: 14, color: _darkBrown),
+          decoration: InputDecoration(
+            hintText: 'Cari menu...',
+            hintStyle: TextStyle(
+                color: _darkBrown.withOpacity(0.4), fontSize: 14),
+            prefixIcon:
+                const Icon(Icons.search, color: _primaryBrown, size: 20),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? GestureDetector(
+                    onTap: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                    },
+                    child: const Icon(Icons.close,
+                        color: _primaryBrown, size: 18),
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCategoryTabs() {
-    // Daftar tab default jika belum ada kategori
     final List<Map<String, dynamic>> defaultTabs = [
       {'id': null, 'name': 'All'},
       {'id': 'recommended', 'name': 'Recommended'},
@@ -341,7 +401,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _categories.isEmpty ? defaultTabs.length : _categories.length + 1,
+        itemCount: _categories.isEmpty
+            ? defaultTabs.length
+            : _categories.length + 1,
         itemBuilder: (context, index) {
           String? catId;
           String catName;
@@ -368,7 +430,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
             onTap: () => setState(() => _selectedCategoryId = catId),
             child: Container(
               margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected ? _primaryBrown : _cardBeige,
                 borderRadius: BorderRadius.circular(20),
@@ -393,7 +456,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                 catName,
                 style: TextStyle(
                   color: isSelected ? Colors.white : _darkBrown,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontWeight:
+                      isSelected ? FontWeight.bold : FontWeight.w500,
                   fontSize: 13,
                 ),
               ),
@@ -404,7 +468,6 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     );
   }
 
-  // Semua menu dikelompokkan per kategori
   Widget _buildAllMenu() {
     return ListView(
       controller: _scrollController,
@@ -417,6 +480,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
       children: _categories.map((cat) {
         final menus = _menus
             .where((m) => m.categoryId == cat.id && m.isAvailable)
+            .where((m) =>
+                _searchQuery.isEmpty ||
+                m.name.toLowerCase().contains(_searchQuery.toLowerCase()))
             .toList();
         if (menus.isEmpty) return const SizedBox.shrink();
         return Column(
@@ -427,7 +493,9 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
               child: Text(
                 cat.name,
                 style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold, color: _darkBrown),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: _darkBrown),
               ),
             ),
             GridView.builder(
@@ -436,7 +504,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
               gridDelegate:
                   const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.72,
+                childAspectRatio: 0.65, // ← lebih kotak
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 14,
               ),
@@ -451,7 +519,6 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
     );
   }
 
-  // Menu per kategori yang dipilih
   Widget _buildFilteredMenu() {
     final menus = _filteredMenus;
 
@@ -480,7 +547,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
       ),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.65, // ← lebih kotak
         crossAxisSpacing: 14,
         mainAxisSpacing: 14,
       ),
@@ -511,28 +578,30 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _lightBeige,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: menu.imageUrl.isNotEmpty
-                      ? Image.network(
-                          menu.imageUrl,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        )
-                      : const Center(
-                          child: Icon(Icons.local_cafe,
-                              size: 40, color: _primaryBrown),
-                        ),
-                ),
-              ),
+            // Foto kotak penuh
+Expanded(
+  child: Container(
+    margin: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: _lightBeige,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: menu.imageUrl.isNotEmpty
+          ? Image.network(
+              menu.imageUrl,
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            )
+          : const Center(
+              child: Icon(Icons.local_cafe,
+                  size: 40, color: _primaryBrown),
             ),
+    ),
+  ),
+),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: Column(
@@ -562,7 +631,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                       ),
                       if (itemInCart > 0)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: _primaryBrown,
                             borderRadius: BorderRadius.circular(6),
@@ -598,7 +668,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
                           ),
                         )
                       : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
                           children: [
                             InkWell(
                               onTap: () => setState(
@@ -650,7 +721,8 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: _creamBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Row(
           children: [
             Icon(Icons.wifi, color: _primaryBrown),
@@ -663,18 +735,21 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Nama WiFi:',
-                style: TextStyle(fontWeight: FontWeight.bold, color: _darkBrown)),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: _darkBrown)),
             Text(_cafe?.wifiName ?? '-'),
             const SizedBox(height: 12),
             const Text('Password:',
-                style: TextStyle(fontWeight: FontWeight.bold, color: _darkBrown)),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: _darkBrown)),
             Text(_cafe?.wifiPassword ?? '-'),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup', style: TextStyle(color: _primaryBrown)),
+            child: const Text('Tutup',
+                style: TextStyle(color: _primaryBrown)),
           ),
         ],
       ),
@@ -684,6 +759,7 @@ class _CustomerMenuScreenState extends State<CustomerMenuScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 }

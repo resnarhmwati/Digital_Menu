@@ -81,6 +81,8 @@ class _CartScreenState extends State<CartScreen> {
       appBar: AppBar(
         backgroundColor: _primaryBrown,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Cart',
           style: TextStyle(
@@ -129,9 +131,6 @@ class _CartScreenState extends State<CartScreen> {
                   child: Container(
                     decoration: const BoxDecoration(
                       color: _creamBg,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(32),
-                      ),
                     ),
                     child: ListView.builder(
                       padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
@@ -194,7 +193,7 @@ class _CartScreenState extends State<CartScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Text(
-                                  '\$${item.menu.price.toInt()}',
+                                  AppConstants.formatRupiah(item.menu.price),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,

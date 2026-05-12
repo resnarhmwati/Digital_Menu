@@ -22,10 +22,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const SettingsScreen(),
   ];
 
-  static const Color _brown = Color(0xFF8D6E63);
+  // Warna tema disesuaikan dengan referensi gambar
+  static const Color _brown = Color(0xFF8B6F47);
   static const Color _darkBrown = Color(0xFF5D4037);
-  static const Color _cream = Color(0xFFF5F0EB);
-  static const Color _surface = Color(0xFFFFF8F0);
+  static const Color _cream = Color(0xFFF2EBE0);
+  static const Color _surface = Color(0xFFE8DCC8);
 
   @override
   Widget build(BuildContext context) {

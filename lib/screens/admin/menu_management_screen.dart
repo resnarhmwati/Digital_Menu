@@ -21,18 +21,29 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   final _cloudinaryService = CloudinaryService();
   List<CategoryModel> _categories = [];
 
-  // ─── WARNA TEMA WARM BROWN (sesuai gambar desain) ───
-  static const Color _primaryBrown = Color(0xFF8D6E63);
+  // ─── TAMBAHAN: search controller & query ───
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  // ─── WARNA TEMA WARM BROWN (sesuai gambar desain referensi) ───
+  static const Color _primaryBrown = Color(0xFF8B6F47);
   static const Color _darkBrown = Color(0xFF5D4037);
-  static const Color _lightBrown = Color(0xFFD7CCC8);
-  static const Color _cream = Color(0xFFF5F0EB);
-  static const Color _surfaceCream = Color(0xFFFFF8F0);
-  static const Color _accentBrown = Color(0xFFA1887F);
+  static const Color _lightBrown = Color(0xFFD4C4A8);
+  static const Color _cream = Color(0xFFF2EBE0);
+  static const Color _surfaceCream = Color(0xFFE8DCC8);
+  static const Color _accentBrown = Color(0xFF8B6F47);
 
   @override
   void initState() {
     super.initState();
     _loadCategories();
+  }
+
+  // ─── TAMBAHAN: dispose search controller ───
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _loadCategories() {
@@ -49,6 +60,17 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
       stream: _firestoreService.getMenus(AppConstants.cafeId),
       builder: (context, menuSnapshot) {
         final menus = menuSnapshot.data ?? [];
+
+        // ─── TAMBAHAN: filter menus berdasarkan search query ───
+        final filteredMenus = _searchQuery.isEmpty
+            ? menus
+            : menus
+                .where((m) =>
+                    m.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                    m.description
+                        .toLowerCase()
+                        .contains(_searchQuery.toLowerCase()))
+                .toList();
 
         return Scaffold(
           backgroundColor: _cream,
@@ -69,35 +91,106 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
               ),
             ),
           ),
-          body: menus.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Belum ada menu',
-                    style: TextStyle(
-                      color: _accentBrown,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+          body: Column(
+            children: [
+              // ─── TAMBAHAN: Search Bar ───
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: _darkBrown),
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  decoration: InputDecoration(
+                    hintText: 'Cari menu...',
+                    hintStyle:
+                        const TextStyle(color: _accentBrown, fontSize: 14),
+                    prefixIcon:
+                        const Icon(Icons.search, color: _accentBrown, size: 22),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                            child: const Icon(Icons.close,
+                                color: _accentBrown, size: 20),
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: _surfaceCream,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: _lightBrown),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide:
+                          const BorderSide(color: _primaryBrown, width: 2),
                     ),
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: menus.length,
-                  itemBuilder: (context, index) {
-                    final menu = menus[index];
-                    final category = _categories.firstWhere(
-                      (c) => c.id == menu.categoryId,
-                      orElse: () => CategoryModel(
-                        id: '',
-                        cafeId: '',
-                        name: '-',
-                        order: 0,
-                        isActive: true,
-                      ),
-                    );
-                    return _buildMenuCard(menu, category);
-                  },
                 ),
+              ),
+
+              // ─── TAMBAHAN: label hasil pencarian ───
+              if (_searchQuery.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, bottom: 4),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${filteredMenus.length} hasil untuk "$_searchQuery"',
+                      style: const TextStyle(
+                        color: _accentBrown,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // ─── LIST (tidak diubah, hanya pakai filteredMenus) ───
+              Expanded(
+                child: filteredMenus.isEmpty
+                    ? Center(
+                        child: Text(
+                          _searchQuery.isNotEmpty
+                              ? 'Menu tidak ditemukan'
+                              : 'Belum ada menu',
+                          style: const TextStyle(
+                            color: _accentBrown,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: filteredMenus.length,
+                        itemBuilder: (context, index) {
+                          final menu = filteredMenus[index];
+                          final category = _categories.firstWhere(
+                            (c) => c.id == menu.categoryId,
+                            orElse: () => CategoryModel(
+                              id: '',
+                              cafeId: '',
+                              name: '-',
+                              order: 0,
+                              isActive: true,
+                            ),
+                          );
+                          return _buildMenuCard(menu, category);
+                        },
+                      ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -127,12 +220,12 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFEBE9),
+                    color: _lightBrown,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.fastfood,
-                    color: _accentBrown,
+                    Icons.local_cafe,
+                    color: _primaryBrown,
                     size: 28,
                   ),
                 ),
@@ -195,7 +288,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
             Container(
               margin: const EdgeInsets.only(left: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFEBE9),
+                color: _lightBrown.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: IconButton(
@@ -208,11 +301,11 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
             Container(
               margin: const EdgeInsets.only(left: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFEBEE),
+                color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: IconButton(
-                icon: const Icon(Icons.delete, color: Color(0xFFC62828), size: 20),
+                icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                 onPressed: () => _confirmDelete(context, menu),
                 splashRadius: 20,
               ),
@@ -258,7 +351,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
             child: const Text(
               'Hapus',
               style: TextStyle(
-                color: Color(0xFFC62828),
+                color: Colors.red,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -348,7 +441,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     height: 140,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEFEBE9),
+                      color: _lightBrown.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: _lightBrown, width: 1.5),
                     ),
