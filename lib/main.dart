@@ -1,11 +1,13 @@
-import 'package:cafe_menu_digital/screens/admin/splash_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
+// Import Screen
+import 'screens/admin/splash_screen.dart';
 import 'screens/admin/login_screen.dart';
 import 'screens/admin/dashboard_screen.dart';
 import 'screens/customer/menu_screen.dart';
-import '../../services/firestore_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,15 +25,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Cafe Menu Digital',
       theme: ThemeData(
-        primarySwatch: Colors.orange,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+      
+      // Menggunakan 'home' lebih stabil untuk membedakan Web & Mobile
+      // Web: Langsung ke Menu Customer
+      // Mobile: Lewat Splash Screen (Admin)
+      home: kIsWeb ? const CustomerMenuScreen() : const SplashScreen(),
+
+      // Definisikan rute untuk navigasi manual
       routes: {
-        '/': (context) => const SplashScreen(),
         '/menu': (context) => const CustomerMenuScreen(),
         '/login': (context) => const LoginScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
       },
     );
   }
