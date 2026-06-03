@@ -6,6 +6,7 @@ import '../../models/cart_model.dart';
 import '../../services/firestore_service.dart';
 import '../../utils/constants.dart';
 import 'cart_screen.dart';
+import 'package:flutter/services.dart';
 
 class CustomerMenuScreen extends StatefulWidget {
   const CustomerMenuScreen({Key? key}) : super(key: key);
@@ -746,12 +747,28 @@ Expanded(
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tutup',
-                style: TextStyle(color: _primaryBrown)),
-          ),
-        ],
+  TextButton.icon(
+    onPressed: () {
+      Clipboard.setData(
+        ClipboardData(text: _cafe?.wifiPassword ?? ''),
+      );
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password WiFi disalin!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    },
+    icon: const Icon(Icons.copy, color: _primaryBrown, size: 18),
+    label: const Text('Salin Password',
+        style: TextStyle(color: _primaryBrown)),
+  ),
+  TextButton(
+    onPressed: () => Navigator.pop(context),
+    child: const Text('Tutup', style: TextStyle(color: _primaryBrown)),
+  ),
+],
       ),
     );
   }

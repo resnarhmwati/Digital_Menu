@@ -1,35 +1,18 @@
 {
-    "name": "cafe_menu_digital",
-    "short_name": "cafe_menu_digital",
+    "name": "ArSeven Menu Digital",
+    "short_name": "ArSeven",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "AR Seven Menu Digital",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
         {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "icons/Icon-maskable-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
+            "src": "arseven_logo.png",
+            "sizes": "any",
+            "type": "image/jpeg"
         }
     ]
 }
